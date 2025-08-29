@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool SunWin + MD5 + Admin</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#00111a,#071019);
+    color: white;
+    overflow-x: hidden;
+}
+/* MENU */
+.menu-bar {
+    position: fixed;
+    top: 0; left:0;
+    width: 100%;
+    background: rgba(0,0,0,0.7);
+    display:flex; gap:20px; padding:10px 20px;
+    box-shadow:0 2px 10px #00ffcc;
+    z-index:1000;
+}
+.menu-bar button {
+    background:#00ffcc;color:#000;border:none;padding:10px 20px;
+    border-radius:10px;font-weight:bold;cursor:pointer;
+    transition: transform 0.2s;
+}
+.menu-bar button:hover {transform: scale(1.1);}
+
+/* TAB */
+.tab {display:none;padding:80px 20px 20px 20px;min-height:100vh;text-align:center;animation:fadeInTab 0.5s ease forwards;}
+@keyframes fadeInTab {from{opacity:0;}to{opacity:1;}}
+
+/* MD5 TAB */
+.md5-container {display:inline-block;background:rgba(0,0,0,0.6);padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffcc;}
+.md5-container input[type="text"] {width:80%;padding:10px;border-radius:10px;border:none;margin-bottom:15px;font-size:16px;}
+.md5-container button {padding:10px 20px;border-radius:10px;border:none;background:#00ffcc;color:#000;font-weight:bold;cursor:pointer;margin-bottom:20px;}
+.robot-logo {width:100px;height:100px;margin:0 auto 15px auto;border-radius:15px;overflow:hidden;animation:bounceIn 0.8s ease forwards;}
+.robot-logo img {width:100%;height:100%;object-fit:cover;}
+.prediction {font-size:20px;font-weight:bold;margin-top:10px;opacity:0;animation:fadeIn 1s ease forwards;}
+@keyframes fadeIn {from{opacity:0;}to{opacity:1;}}
+@keyframes bounceIn {0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+
+ /* SunWin Tab */
+.sunwin-container {display:inline-block;background:rgba(0,0,0,0.6);padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffcc;max-width:400px;margin:auto;}
+.sunwin-container h2 {margin-bottom:15px;}
+.circle {width:100px;height:100px;border-radius:50%;border:3px solid #00aaff;display:flex;justify-content:center;align-items:center;font-size:22px;font-weight:bold;margin:15px auto;background-color:black;}
+.status {text-align:center;color:#66ccff;font-size:14px;}
+.time {text-align:center;font-size:16px;margin-bottom:10px;}
+table {width:100%;font-size:13px;border-collapse:collapse;margin-top:10px;}
+th,td{padding:6px;text-align:center;border-bottom:1px solid #003366;}
+th{background:#003f66;}
+.tai{background:#00ff00;color:#000;border-radius:6px;padding:2px 6px;font-weight:bold;}
+.xiu{background:#ff3333;color:#fff;border-radius:6px;padding:2px 6px;font-weight:bold;}
+.win{color:#00ff00;font-weight:bold;}
+.lose{color:#ff3333;font-weight:bold;}
+.pending{color:#ccc;font-style:italic;}
+.delete-btn{background-color:red;color:white;padding:8px;border:none;border-radius:6px;cursor:pointer;margin:10px auto;display:block;font-weight:bold;}
+.title{font-weight:bold;margin:5px 0;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="menu-bar">
+    <button onclick="openTab('sunwin')">SunWin</button>
+    <button onclick="openTab('md5')">MD5</button>
+    <button onclick="openTab('admin')">Admin</button>
+</div>
+
+<!-- SUNWIN TAB -->
+<div id="sunwin" class="tab">
+    <div class="sunwin-container">
+        <h2>SunWin Tool</h2>
+        <div id="phienText" class="status">#------</div>
+        <div class="circle" id="prediction">--</div>
+        <div class="status" id="status">ĐANG KẾT NỐI...</div>
+        <div class="time" id="clock">--:--:--</div>
+
+        <button class="delete-btn" onclick="clearHistory()">🗑️ XÓA DỮ LIỆU</button>
+        <hr>
+        <div class="title">Lịch sử kết quả:</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Phiên</th>
+              <th>Dự đoán</th>
+              <th>Kết quả</th>
+              <th>Đánh giá</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody id="history"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MD5 TAB -->
+<div id="md5" class="tab">
+    <div class="md5-container">
+        <h2>MD5 Dùng Cho: hitclub, b52 các game có mã md5</h2>
+        <input type="text" id="md5Input" placeholder="Nhập 32 ký tự MD5">
+        <br>
+        <button onclick="predictMD5()">Dự đoán</button>
+
+        <div class="robot-logo">
+            <img src="https://i.imgur.com/MZr9Fr2.png" alt="robot">
+        </div>
+        <div class="prediction" id="predictionText">...</div>
+    </div>
+</div>
+
+<!-- ADMIN TAB -->
+<div id="admin" class="tab">
+    <h2 style="font-size:36px;margin-bottom:20px;">TOOL BY ADMIN VĂN TÙNG</h2>
+    <p style="font-size:20px;">Tool Lỏ Cặc Ăn 50-50 (NÊN BẺ TOOL)</p>
+    <p style="margin-top:50px;font-size:18px;">Dev: @vtung</p>
+</div>
+
+<script>
+function openTab(tabName){
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t=>t.style.display='none');
+    document.getElementById(tabName).style.display='block';
+}
+openTab('admin'); // mặc định
+
+/* ------------------ MD5 ------------------ */
+function predictMD5(){
+    const input = document.getElementById('md5Input').value.trim();
+    const output = document.getElementById('predictionText');
+    if(input.length!==32){
+        output.innerText="Vui lòng nhập đủ 32 ký tự MD5!";
+        output.style.color="#ff3333";
+        output.style.opacity=1;
+        return;
+    }
+    // Thuật toán demo nâng cao
+    let sumChar=0;
+    for(let i=0;i<32;i++){sumChar+=input.charCodeAt(i);}
+    const prediction=sumChar%2===0?"Tài":"Xỉu";
+    const ratio=Math.floor(Math.random()*100)+"%";
+    output.innerHTML=`#${input} → ${prediction} | ${ratio}`;
+    output.style.color="#00ffcc";
+    output.style.opacity=1;
+    output.style.animation="fadeIn 1s ease forwards";
+}
+
+/* ------------------ SUNWIN ------------------ */
+const apiURL = "https://toilavinhmaycays23.onrender.com/vinhmaycay";
+const LOCAL_STORAGE_KEY = "sunwinHistory";
+let historyData=[];
+
+function formatTime(){return new Date().toLocaleTimeString('vi-VN');}
+
+function loadHistory(){
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if(stored){historyData=JSON.parse(stored);historyData.forEach(item=>addRowToTable(item.phien,item.prediction,item.result,item.time));}
+}
+
+function saveHistory(){localStorage.setItem(LOCAL_STORAGE_KEY,JSON.stringify(historyData));}
+
+function addRowToTable(phien,prediction,result,time){
+    const row=document.createElement('tr');
+    let danhGia='', predictionHtml='', resultHtml='';
+    if(!prediction){predictionHtml='<span class="pending">Chưa dự đoán</span>'; danhGia='<span class="pending">Chưa dự đoán</span>';}
+    else{const isWin=prediction===result; danhGia=isWin?'<span class="win">✔ Thắng</span>':'<span class="lose">✘ Thua</span>'; predictionHtml=prediction==='Tài'?'<span class="tai">'+prediction+'</span>':'<span class="xiu">'+prediction+'</span>';}
+    resultHtml=result==='Tài'?'<span class="tai">'+result+'</span>':'<span class="xiu">'+result+'</span>';
+    row.innerHTML=`<td>${phien}</td><td>${predictionHtml}</td><td>${resultHtml}</td><td>${danhGia}</td><td>${time}</td>`;
+    document.getElementById("history").prepend(row);
+}
+
+function duDoan(history){
+    if(history.length===0) return "--";
+    const last20=history.slice(0,20);
+    const taiCount=last20.filter(h=>h.result==="Tài").length;
+    const xiuCount=last20.filter(h=>h.result==="Xỉu").length;
+    const total=taiCount+xiuCount;
+    if(total===0) return "--";
+    const taiPercent=(taiCount/total)*100;
+    return taiPercent>60?"Xỉu":"Tài";
+}
+
+async function fetchData(){
+    try{
+        const res=await fetch(apiURL);
+        const data=await res.json();
+        const currentPhien=data.Phien;
+        const ketQua=data.Ket_qua;
+        const time=formatTime();
+        document.getElementById("phienText").innerText="#"+(currentPhien+1);
+        document.getElementById("clock").innerText=time;
+        document.getElementById("status").innerText="ĐÃ KẾT NỐI";
+        const duDoanAuto=duDoan(historyData);
+        document.getElementById("prediction").innerText=duDoanAuto;
+        const exist=historyData.find(item=>item.phien===currentPhien);
+        if(!exist){
+            const newEntry={phien:currentPhien,prediction:duDoanAuto,result:ketQua,time:time};
+            historyData.unshift(newEntry);
+            saveHistory();
+            addRowToTable(newEntry.phien,newEntry.prediction,newEntry.result,newEntry.time);
+        }
+    }catch(e){document.getElementById("status").innerText="LỖI KẾT NỐI API";}
+}
+
+function clearHistory(){
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    historyData=[];document.getElementById("history").innerHTML="";
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+    loadHistory();
+    setInterval(fetchData,1500);
+});
+</script>
+
+</body>
+</html>
